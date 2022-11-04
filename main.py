@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
-
-from PIL import Image
+import cv2
 import argparse
 
 
@@ -9,22 +8,25 @@ def slice_image(source_image_path, number_cols_rows, margin):
     base_path = os.path.dirname(source_image_path)
     image_name = source_image_path.stem
     image_suffix = source_image_path.suffix
-    i = Image.open(source_image_path)
-    width = i.width
-    height = i.height
-    pieces = 0
-    for y in range(number_cols_rows):
-        for x in range(number_cols_rows):
-            index = pieces
-            pieces = pieces + 1
 
-            img = i.crop((x * width / number_cols_rows, y * height / number_cols_rows, x * width / number_cols_rows + width / number_cols_rows, y * height / number_cols_rows + height / number_cols_rows))
+    org  = cv2.imread(str(source_image_path))
+    img = cv2.imread(str(source_image_path))
 
-            result = Image.new(img.mode, (int(width / number_cols_rows) + int(margin / number_cols_rows), int(height / number_cols_rows) + int(margin / number_cols_rows)), (255, 255, 255))
+    # convert to RGB
+    image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    ret,thresh = cv2.threshold(gray, 240,255, cv2.THRESH_BINARY_INV)
 
-            result.paste(img, (x * int(margin / 2), y * int(margin / 2)))
+    contours,hierarchy = cv2.findContours(thresh, 1, 2)
 
-            result.save(Path(f"{base_path}/{image_name}_p{index + 1}{image_suffix}"))
+    listCnt = [cnt for cnt in contours if cv2.boundingRect(cnt)[3]>img.shape[0]/5 and cv2.boundingRect(cnt)[3]<img.shape[0]]
+    paneNumbers = len(listCnt)
+
+    for cnt in listCnt:
+        x,y,w,h = cv2.boundingRect(cnt)
+        cv2.imwrite(f"{base_path}/{image_name}_p{paneNumbers}{image_suffix}", org[y:y+h, x:x+w])
+        paneNumbers -= 1
 
 
 if __name__ == '__main__':
