@@ -4,7 +4,7 @@ import cv2
 import argparse
 
 
-def slice_image(source_image_path, number_cols_rows, margin):
+def slice_image(source_image_path):
     base_path = os.path.dirname(source_image_path)
     image_name = source_image_path.stem
     image_suffix = source_image_path.suffix
