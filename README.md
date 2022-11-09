@@ -9,6 +9,6 @@ It uses OpenCV2 to track the shapes of the inputed comic, find panels then proce
 Install and activate a venv, then install requirements with 'pip install -r requirements.txt'
 
 All you need to do is to run the script with a file as argument.
-> py comic.py comic.png
+> py main.py comic.png
 
 
